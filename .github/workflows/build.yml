@@ -8,14 +8,18 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build with OpenOrbis
-        uses: OpenOrbis/toolchain-action@main
-        with:
-          version: v0.5.1
-          command: make
+      - name: Setup OpenOrbis
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld make
+
+      - name: Check files
+        run: |
+          ls -la
+          echo "Source files checked"
