@@ -1,25 +1,11 @@
 #include <stdio.h>
-#include <string.h>
-#include <graphics.h>
-#include <log.h>
+#include "../../_common/graphics.h"
 
 #define FRAME_WIDTH 1920
 #define FRAME_HEIGHT 1080
 #define FRAME_DEPTH 4
 
 int frameID = 0;
-
-void drawRect(Scene2D *scene, int x, int y,
-              int width, int height, Color color)
-{
-    for (int py = y; py < y + height; py++)
-    {
-        for (int px = x; px < x + width; px++)
-        {
-            scene->DrawPixel(px, py, color);
-        }
-    }
-}
 
 int main()
 {
@@ -33,18 +19,19 @@ int main()
         for (;;) {}
     }
 
-    Color white = {255, 255, 255};
     Color blue = {0, 90, 220};
 
     for (;;)
     {
         scene->FrameBufferClear();
 
-        drawRect(scene, 826, 140, 8, 800, blue);
-        drawRect(scene, 1086, 140, 8, 800, blue);
+        // Vertical lines
+        scene->DrawRectangle(826, 140, 8, 800, blue);
+        scene->DrawRectangle(1086, 140, 8, 800, blue);
 
-        drawRect(scene, 560, 400, 800, 8, blue);
-        drawRect(scene, 560, 660, 800, 8, blue);
+        // Horizontal lines
+        scene->DrawRectangle(560, 400, 800, 8, blue);
+        scene->DrawRectangle(560, 660, 800, 8, blue);
 
         scene->SubmitFlip(frameID);
         scene->FrameWait(frameID);
