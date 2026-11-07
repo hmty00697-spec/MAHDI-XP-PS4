@@ -41,23 +41,13 @@ int main()
         // پس‌زمینه سفید
         scene->FrameBufferFill(white);
 
-        // دو خط عمودی
-        scene->DrawRectangle(
-            826, 140, 8, 800, blue
-        );
+        // خطوط عمودی جدول
+        scene->DrawRectangle(826, 140, 8, 800, blue);
+        scene->DrawRectangle(1086, 140, 8, 800, blue);
 
-        scene->DrawRectangle(
-            1086, 140, 8, 800, blue
-        );
-
-        // دو خط افقی
-        scene->DrawRectangle(
-            560, 400, 800, 8, blue
-        );
-
-        scene->DrawRectangle(
-            560, 660, 800, 8, blue
-        );
+        // خطوط افقی جدول
+        scene->DrawRectangle(560, 400, 800, 8, blue);
+        scene->DrawRectangle(560, 660, 800, 8, blue);
 
         // نمایش فریم
         scene->SubmitFlip(frameID);
