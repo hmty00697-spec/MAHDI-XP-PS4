@@ -17,10 +17,11 @@ jobs:
       - name: Build PS4 Game
         run: |
           docker run --rm \
+            --user root \
             -v "$GITHUB_WORKSPACE:/workspace" \
             -w /workspace \
             openorbisofficial/toolchain:latest \
-            bash -lc "set -e; echo 'Starting PS4 build'; make"
+            bash -lc "set -e; echo 'Starting MAHDI XP PS4 Build'; make"
 
       - name: Upload Build Files
         if: success()
