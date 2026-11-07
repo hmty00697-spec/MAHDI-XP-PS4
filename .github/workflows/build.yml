@@ -14,11 +14,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Test OpenOrbis Toolchain
+      - name: Build PS4 Game
         run: |
-          docker run --rm openorbisofficial/toolchain:latest bash -lc '
-            echo "OpenOrbis Toolchain"
-            echo "SDK: $OO_PS4_TOOLCHAIN"
-            test -d "$OO_PS4_TOOLCHAIN"
-            ls "$OO_PS4_TOOLCHAIN/bin/linux"
-          '
+          docker run --rm \
+            -v "$GITHUB_WORKSPACE:/workspace" \
+            -w /workspace \
+            openorbisofficial/toolchain:latest \
+            bash -lc "set -e; echo 'Starting PS4 build'; make"
+
+      - name: Upload Build Files
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MAHDI-XP-PS4-Build
+          path: |
+            eboot.bin
+            build/
+          if-no-files-found: warn
