@@ -14,8 +14,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build PS4 Game
+      - name: Test OpenOrbis Toolchain
         run: |
-          docker --version
-          git clone --depth 1 https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain.git toolchain
-          echo "OpenOrbis source downloaded successfully"
+          docker run --rm openorbisofficial/toolchain:latest bash -lc '
+            echo "OpenOrbis Toolchain"
+            echo "SDK: $OO_PS4_TOOLCHAIN"
+            test -d "$OO_PS4_TOOLCHAIN"
+            ls "$OO_PS4_TOOLCHAIN/bin/linux"
+          '
