@@ -1,3 +1,4 @@
+
 TOOLCHAIN := $(OO_PS4_TOOLCHAIN)
 
 CC := clang
@@ -23,7 +24,7 @@ LDFLAGS := -m elf_x86_64 -pie \
            --script $(TOOLCHAIN)/link.x \
            --eh-frame-hdr \
            -L$(TOOLCHAIN)/lib \
-           -lc -lkernel -lc++ \
+           -lc -lkernel -lc++ -lSceVideoOut \
            $(TOOLCHAIN)/lib/crt1.o
 
 all: $(TARGET)
