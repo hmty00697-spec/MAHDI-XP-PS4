@@ -6,6 +6,9 @@
 #include <orbis/Pad.h>
 #include <orbis/UserService.h>
 
+#define MAX_LOGIN_USERS_LOCAL 4
+#define INVALID_USER_ID_LOCAL (-1)
+
 #define FRAME_WIDTH 1920
 #define FRAME_HEIGHT 1080
 #define FRAME_DEPTH 4
