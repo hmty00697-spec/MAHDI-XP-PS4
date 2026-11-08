@@ -1,3 +1,4 @@
+
 name: MAHDI XP PS4 Build
 
 on:
@@ -11,8 +12,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Game
         uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Checkout create-fself
+        uses: actions/checkout@v4
+        with:
+          repository: OpenOrbis/create-fself
+          path: create-fself-source
+
+      - name: Build create-fself
+        run: |
+          cd create-fself-source/cmd/create-fself
+          go build -modfile=go-linux.mod \
+            -o "$GITHUB_WORKSPACE/create-fself" .
 
       - name: Build PS4 Game
         run: |
@@ -21,7 +39,12 @@ jobs:
             -v "$GITHUB_WORKSPACE:/workspace" \
             -w /workspace \
             openorbisofficial/toolchain:latest \
-            bash -lc "set -e; echo 'Starting MAHDI XP PS4 Build'; make"
+            bash -lc "set -e
+            mkdir -p /lib/OpenOrbisSDK/bin/linux
+            cp /workspace/create-fself /lib/OpenOrbisSDK/bin/linux/create-fself
+            chmod +x /lib/OpenOrbisSDK/bin/linux/create-fself
+            echo 'Starting MAHDI XP PS4 Build'
+            make"
 
       - name: Upload Build Files
         if: success()
