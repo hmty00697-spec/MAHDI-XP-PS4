@@ -1,5 +1,8 @@
 #include <stdio.h>
+#include <sstream>
 #include "graphics.h"
+
+std::stringstream debugLogStream;
 
 #define FRAME_WIDTH 1920
 #define FRAME_HEIGHT 1080
@@ -29,11 +32,9 @@ int main()
     {
         scene->FrameBufferFill(white);
 
-        // Vertical lines
         scene->DrawRectangle(826, 140, 8, 800, blue);
         scene->DrawRectangle(1086, 140, 8, 800, blue);
 
-        // Horizontal lines
         scene->DrawRectangle(560, 400, 800, 8, blue);
         scene->DrawRectangle(560, 660, 800, 8, blue);
 
