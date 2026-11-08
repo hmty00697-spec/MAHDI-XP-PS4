@@ -15,16 +15,14 @@
 
 int frameID = 0;
 
-// ---------------- COLORS ----------------
-
+// COLORS
 Color white     = {255, 255, 255};
 Color blue      = {0, 90, 220};
 Color black     = {15, 15, 15};
 Color red       = {220, 35, 35};
 Color highlight = {0, 170, 110};
 
-// ---------------- FONT ----------------
-
+// FONT
 void getGlyph(char c, uint8_t p[7])
 {
     memset(p, 0, 7);
@@ -50,7 +48,6 @@ void getGlyph(char c, uint8_t p[7])
         case 'W': { uint8_t a[]={17,17,17,21,21,21,10}; memcpy(p,a,7); break; }
         case 'X': { uint8_t a[]={17,17,10,4,10,17,17}; memcpy(p,a,7); break; }
         case 'Y': { uint8_t a[]={17,17,10,4,4,4,4}; memcpy(p,a,7); break; }
-
         case '1': { uint8_t a[]={4,12,4,4,4,4,14}; memcpy(p,a,7); break; }
         case '2': { uint8_t a[]={14,17,1,2,4,8,31}; memcpy(p,a,7); break; }
         case '.': p[6] = 4; break;
@@ -88,14 +85,11 @@ void drawCenteredText(Scene2D *scene, const char *text,
 {
     int width = (int)strlen(text) * 6 * scale;
     int x = (FRAME_WIDTH - width) / 2;
-
     drawText(scene, text, x, y, scale, color);
 }
 
-// ---------------- GAME BOARD ----------------
-
+// GAME BOARD
 int board[9] = {0};
-
 int cursor = 4;
 int currentPlayer = 1;
 int winner = 0;
@@ -136,9 +130,7 @@ int checkWinner()
         if (board[a] != 0 &&
             board[a] == board[b] &&
             board[b] == board[c])
-        {
             return board[a];
-        }
     }
 
     return 0;
@@ -153,23 +145,16 @@ bool boardFull()
     return true;
 }
 
-// ---------------- DRAW MARKS ----------------
-
+// DRAW MARKS
 void drawX(Scene2D *scene, int cx, int cy, Color color)
 {
     for (int i = 0; i <= 100; i += 5)
     {
-        scene->DrawRectangle(
-            cx - 52 + i,
-            cy - 52 + i,
-            12, 12, color
-        );
+        scene->DrawRectangle(cx - 52 + i, cy - 52 + i,
+                             12, 12, color);
 
-        scene->DrawRectangle(
-            cx + 40 - i,
-            cy - 52 + i,
-            12, 12, color
-        );
+        scene->DrawRectangle(cx + 40 - i, cy - 52 + i,
+                             12, 12, color);
     }
 }
 
@@ -199,35 +184,27 @@ void drawO(Scene2D *scene, int cx, int cy, Color color)
 
         if (innerX < 0)
         {
-            scene->DrawRectangle(
-                cx - outerX, cy + y,
-                outerX * 2 + 1, 2, color
-            );
+            scene->DrawRectangle(cx - outerX, cy + y,
+                                 outerX * 2 + 1, 2, color);
         }
         else
         {
-            scene->DrawRectangle(
-                cx - outerX, cy + y,
-                outerX - innerX, 2, color
-            );
+            scene->DrawRectangle(cx - outerX, cy + y,
+                                 outerX - innerX, 2, color);
 
-            scene->DrawRectangle(
-                cx + innerX + 1, cy + y,
-                outerX - innerX, 2, color
-            );
+            scene->DrawRectangle(cx + innerX + 1, cy + y,
+                                 outerX - innerX, 2, color);
         }
     }
 }
 
-// ---------------- DRAW BOARD ----------------
-
+// DRAW BOARD
 void drawBoard(Scene2D *scene)
 {
     scene->FrameBufferFill(white);
 
     drawText(scene, "TIC TAC TOE", 696, 55, 8, black);
 
-    // Grid lines
     scene->DrawRectangle(560, 140, 800, 8, blue);
     scene->DrawRectangle(560, 932, 800, 8, blue);
 
@@ -240,7 +217,6 @@ void drawBoard(Scene2D *scene)
     scene->DrawRectangle(560, 400, 800, 8, blue);
     scene->DrawRectangle(560, 660, 800, 8, blue);
 
-    // Selected cell
     if (!gameOver)
     {
         int row = cursor / 3;
@@ -248,7 +224,6 @@ void drawBoard(Scene2D *scene)
 
         int x = cellX[col] + 12;
         int y = cellY[row] + 12;
-
         int w = cellW[col] - 24;
         int h = cellH[row] - 24;
         int t = 6;
@@ -259,7 +234,6 @@ void drawBoard(Scene2D *scene)
         scene->DrawRectangle(x + w - t, y, t, h, highlight);
     }
 
-    // Marks
     for (int i = 0; i < 9; i++)
     {
         if (board[i] == 0)
@@ -277,7 +251,6 @@ void drawBoard(Scene2D *scene)
             drawO(scene, cx, cy, black);
     }
 
-    // Status
     if (winner == 1)
         drawCenteredText(scene, "P1 WINS", 965, 4, red);
     else if (winner == 2)
@@ -292,8 +265,7 @@ void drawBoard(Scene2D *scene)
     drawCenteredText(scene, "MAHDI.0P", 1030, 3, red);
 }
 
-// ---------------- CONTROLLERS ----------------
-
+// CONTROLLERS
 int padHandles[2] = {-1, -1};
 int padCount = 0;
 
@@ -304,6 +276,7 @@ uint32_t pressedButtons[2] = {0, 0};
 void initializeControllers()
 {
     OrbisUserServiceInitializeParams params;
+    memset(&params, 0, sizeof(params));
     params.priority = ORBIS_KERNEL_PRIO_FIFO_LOWEST;
 
     sceUserServiceInitialize(&params);
@@ -313,18 +286,18 @@ void initializeControllers()
 
     OrbisUserServiceLoginUserIdList users;
 
-    for (int i = 0; i < ORBIS_USER_SERVICE_MAX_LOGIN_USERS; i++)
-        users.userId[i] = ORBIS_USER_SERVICE_USER_ID_INVALID;
+    for (int i = 0; i < MAX_LOGIN_USERS_LOCAL; i++)
+        users.userId[i] = INVALID_USER_ID_LOCAL;
 
     if (sceUserServiceGetLoginUserIdList(&users) == 0)
     {
         for (int i = 0;
-             i < ORBIS_USER_SERVICE_MAX_LOGIN_USERS && padCount < 2;
+             i < MAX_LOGIN_USERS_LOCAL && padCount < 2;
              i++)
         {
             int userID = users.userId[i];
 
-            if (userID == ORBIS_USER_SERVICE_USER_ID_INVALID)
+            if (userID == INVALID_USER_ID_LOCAL)
                 continue;
 
             int handle = scePadOpen(userID, 0, 0, NULL);
@@ -334,13 +307,12 @@ void initializeControllers()
         }
     }
 
-    // Fallback: try the initial user if the list was unavailable.
     if (padCount == 0)
     {
-        int userID = ORBIS_USER_SERVICE_USER_ID_INVALID;
+        int userID = INVALID_USER_ID_LOCAL;
 
         if (sceUserServiceGetInitialUser(&userID) == 0 &&
-            userID != ORBIS_USER_SERVICE_USER_ID_INVALID)
+            userID != INVALID_USER_ID_LOCAL)
         {
             int handle = scePadOpen(userID, 0, 0, NULL);
 
@@ -362,7 +334,6 @@ void readControllers()
         if (scePadReadState(padHandles[i], &padData[i]) == 0)
         {
             uint32_t current = padData[i].buttons;
-
             pressedButtons[i] = current & ~previousButtons[i];
             previousButtons[i] = current;
         }
@@ -373,8 +344,7 @@ void readControllers()
     }
 }
 
-// ---------------- INPUT ----------------
-
+// INPUT
 void moveCursor(int direction)
 {
     int row = cursor / 3;
@@ -400,7 +370,6 @@ void processInput()
     if (padCount == 0)
         return;
 
-    // Options on either controller restarts the game.
     for (int i = 0; i < padCount; i++)
     {
         if (pressedButtons[i] & ORBIS_PAD_BUTTON_OPTIONS)
@@ -413,21 +382,15 @@ void processInput()
     if (gameOver)
         return;
 
-    // With two logged-in users, each player uses their own pad.
-    // With one pad, both players take turns on that controller.
     int activePad = (padCount >= 2) ? currentPlayer - 1 : 0;
-
     uint32_t buttons = pressedButtons[activePad];
 
     if (buttons & ORBIS_PAD_BUTTON_UP)
         moveCursor(ORBIS_PAD_BUTTON_UP);
-
     else if (buttons & ORBIS_PAD_BUTTON_DOWN)
         moveCursor(ORBIS_PAD_BUTTON_DOWN);
-
     else if (buttons & ORBIS_PAD_BUTTON_LEFT)
         moveCursor(ORBIS_PAD_BUTTON_LEFT);
-
     else if (buttons & ORBIS_PAD_BUTTON_RIGHT)
         moveCursor(ORBIS_PAD_BUTTON_RIGHT);
 
@@ -436,27 +399,17 @@ void processInput()
         if (board[cursor] == 0)
         {
             board[cursor] = currentPlayer;
-
             winner = checkWinner();
 
-            if (winner != 0)
-            {
+            if (winner != 0 || boardFull())
                 gameOver = true;
-            }
-            else if (boardFull())
-            {
-                gameOver = true;
-            }
             else
-            {
                 currentPlayer = (currentPlayer == 1) ? 2 : 1;
-            }
         }
     }
 }
 
-// ---------------- MAIN ----------------
-
+// MAIN
 int main()
 {
     setvbuf(stdout, NULL, _IONBF, 0);
@@ -472,7 +425,6 @@ int main()
         for (;;) {}
     }
 
-    // Start with framebuffer zero.
     scene->SetActiveFrameBuffer(0);
 
     initializeControllers();
@@ -481,21 +433,14 @@ int main()
     {
         readControllers();
         processInput();
-
         drawBoard(scene);
 
         if (padCount == 0)
-        {
             drawCenteredText(scene, "CONNECT PAD", 1000, 3, black);
-        }
         else if (padCount == 1)
-        {
             drawCenteredText(scene, "ONE PAD MODE", 1000, 3, black);
-        }
         else
-        {
             drawCenteredText(scene, "2 PADS READY", 1000, 3, black);
-        }
 
         scene->SubmitFlip(frameID);
         scene->FrameWait(frameID);
