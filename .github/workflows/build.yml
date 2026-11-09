@@ -32,7 +32,7 @@ jobs:
           go build -modfile=go-linux.mod \
             -o "$GITHUB_WORKSPACE/create-fself" .
 
-      - name: Build PS4 Game
+      - name: Build PS4 Game and PKG
         run: |
           docker run --rm \
             --user root \
@@ -40,18 +40,57 @@ jobs:
             -w /workspace \
             openorbisofficial/toolchain:latest \
             bash -lc "set -e
-            mkdir -p /lib/OpenOrbisSDK/bin/linux
-            cp /workspace/create-fself /lib/OpenOrbisSDK/bin/linux/create-fself
-            chmod +x /lib/OpenOrbisSDK/bin/linux/create-fself
-            echo 'Starting MAHDI XP PS4 Build'
-            make"
 
-      - name: Upload Build Files
+            mkdir -p /lib/OpenOrbisSDK/bin/linux
+
+            cp /workspace/create-fself \
+              /lib/OpenOrbisSDK/bin/linux/create-fself
+
+            chmod +x /lib/OpenOrbisSDK/bin/linux/create-fself
+
+            echo 'Building MAHDI XP'
+            make
+
+            test -f eboot.bin
+            test -f sce_sys/icon0.png
+
+            echo 'Checking packaging tools'
+            command -v create-gp4
+            command -v PkgTool.Core
+
+            echo 'Creating param.sfo'
+            PkgTool.Core sfo_new sce_sys/param.sfo
+
+            PkgTool.Core sfo_setentry sce_sys/param.sfo APP_TYPE --type Integer --maxsize 4 --value 1
+            PkgTool.Core sfo_setentry sce_sys/param.sfo APP_VER --type Utf8 --maxsize 8 --value '1.00'
+            PkgTool.Core sfo_setentry sce_sys/param.sfo ATTRIBUTE --type Integer --maxsize 4 --value 0
+            PkgTool.Core sfo_setentry sce_sys/param.sfo CATEGORY --type Utf8 --maxsize 4 --value 'gd'
+            PkgTool.Core sfo_setentry sce_sys/param.sfo CONTENT_ID --type Utf8 --maxsize 48 --value 'IV0000-MAHDI0001_00-MAHDIXP000000000'
+            PkgTool.Core sfo_setentry sce_sys/param.sfo DOWNLOAD_DATA_SIZE --type Integer --maxsize 4 --value 0
+            PkgTool.Core sfo_setentry sce_sys/param.sfo SYSTEM_VER --type Integer --maxsize 4 --value 0
+            PkgTool.Core sfo_setentry sce_sys/param.sfo TITLE --type Utf8 --maxsize 128 --value 'MAHDI XP'
+            PkgTool.Core sfo_setentry sce_sys/param.sfo TITLE_ID --type Utf8 --maxsize 12 --value 'MAHDI0001'
+            PkgTool.Core sfo_setentry sce_sys/param.sfo VERSION --type Utf8 --maxsize 8 --value '1.00'
+
+            echo 'Creating GP4'
+            create-gp4 -out=pkg.gp4 \
+              --content-id=IV0000-MAHDI0001_00-MAHDIXP000000000 \
+              --files 'eboot.bin sce_sys/param.sfo sce_sys/icon0.png'
+
+            echo 'Building PKG'
+            PkgTool.Core pkg_build pkg.gp4 .
+
+            ls -lh *.pkg
+            "
+
+      - name: Upload PS4 Package
         if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: MAHDI-XP-PS4-Build
+          name: MAHDI-XP-PS4-PKG
           path: |
+            *.pkg
             eboot.bin
-            build/
-          if-no-files-found: warn
+            pkg.gp4
+            sce_sys/param.sfo
+          if-no-files-found: error
