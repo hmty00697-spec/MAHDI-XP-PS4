@@ -26,13 +26,11 @@ jobs:
           repository: OpenOrbis/create-fself
           path: create-fself-source
 
-      - name: Checkout OpenOrbis Toolchain Sources
+      - name: Checkout create-gp4
         uses: actions/checkout@v4
         with:
-          repository: OpenOrbis/OpenOrbis-PS4-Toolchain
-          path: toolchain-source
-          sparse-checkout: |
-            src/tools/create-gp4
+          repository: OpenOrbis/create-gp4
+          path: create-gp4-source
 
       - name: Build Packaging Tools
         run: |
@@ -40,7 +38,7 @@ jobs:
           go build -modfile=go-linux.mod \
             -o "$GITHUB_WORKSPACE/create-fself" .
 
-          cd "$GITHUB_WORKSPACE/toolchain-source/src/tools/create-gp4"
+          cd "$GITHUB_WORKSPACE/create-gp4-source/cmd/create-gp4"
           go build -o "$GITHUB_WORKSPACE/create-gp4" .
 
       - name: Build PS4 Game and PKG
@@ -75,7 +73,7 @@ jobs:
 
             export PATH=\$BIN:\$PATH
 
-            echo 'Checking tools'
+            echo 'Checking packaging tools'
             command -v create-gp4
             command -v PkgTool.Core
 
