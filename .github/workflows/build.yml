@@ -1,3 +1,4 @@
+
 name: MAHDI XP PS4 Build
 
 on:
@@ -25,11 +26,22 @@ jobs:
           repository: OpenOrbis/create-fself
           path: create-fself-source
 
-      - name: Build create-fself
+      - name: Checkout OpenOrbis Toolchain Sources
+        uses: actions/checkout@v4
+        with:
+          repository: OpenOrbis/OpenOrbis-PS4-Toolchain
+          path: toolchain-source
+          sparse-checkout: |
+            src/tools/create-gp4
+
+      - name: Build Packaging Tools
         run: |
           cd create-fself-source/cmd/create-fself
           go build -modfile=go-linux.mod \
             -o "$GITHUB_WORKSPACE/create-fself" .
+
+          cd "$GITHUB_WORKSPACE/toolchain-source/src/tools/create-gp4"
+          go build -o "$GITHUB_WORKSPACE/create-gp4" .
 
       - name: Build PS4 Game and PKG
         run: |
@@ -40,12 +52,32 @@ jobs:
             openorbisofficial/toolchain:latest \
             bash -lc "set -e
 
-            mkdir -p /lib/OpenOrbisSDK/bin/linux
+            SDK=/lib/OpenOrbisSDK
+            BIN=\$SDK/bin/linux
 
-            cp /workspace/create-fself \
-              /lib/OpenOrbisSDK/bin/linux/create-fself
+            mkdir -p \$BIN
 
-            chmod +x /lib/OpenOrbisSDK/bin/linux/create-fself
+            echo 'Installing create-fself'
+            cp /workspace/create-fself \$BIN/create-fself
+            chmod +x \$BIN/create-fself
+
+            echo 'Installing create-gp4'
+            cp /workspace/create-gp4 \$BIN/create-gp4
+            chmod +x \$BIN/create-gp4
+
+            echo 'Downloading PkgTool.Core'
+            curl -fL \
+              https://github.com/maxton/LibOrbisPkg/releases/download/v0.2/PkgTool.Core-linux-x64-0.2.231.zip \
+              -o /tmp/PkgTool.Core.zip
+
+            busybox unzip -o /tmp/PkgTool.Core.zip -d \$BIN
+            chmod +x \$BIN/PkgTool.Core
+
+            export PATH=\$BIN:\$PATH
+
+            echo 'Checking tools'
+            command -v create-gp4
+            command -v PkgTool.Core
 
             echo 'Building MAHDI XP'
             make
@@ -53,44 +85,27 @@ jobs:
             test -f eboot.bin
             test -f sce_sys/icon0.png
 
-            echo 'Finding packaging tools'
-
-            CREATE_GP4=\$(command -v create-gp4 || find / -type f -name create-gp4 -print -quit 2>/dev/null)
-            PKGTOOL=\$(command -v PkgTool.Core || find / -type f -name PkgTool.Core -print -quit 2>/dev/null)
-
-            if [ -z \"\$CREATE_GP4\" ]; then
-              echo 'ERROR: create-gp4 not found'
-              exit 1
-            fi
-
-            if [ -z \"\$PKGTOOL\" ]; then
-              echo 'ERROR: PkgTool.Core not found'
-              exit 1
-            fi
-
-            export PATH=\"\$(dirname \"\$CREATE_GP4\"):\$(dirname \"\$PKGTOOL\"):\$PATH\"
-
-            echo 'create-gp4 found'
-            echo 'PkgTool.Core found'
-
             echo 'Creating param.sfo'
             PkgTool.Core sfo_new sce_sys/param.sfo
 
-            PkgTool.Core sfo_setentry sce_sys/param.sfo APP_TYPE --type Integer --maxsize 4 --value 1
-            PkgTool.Core sfo_setentry sce_sys/param.sfo APP_VER --type Utf8 --maxsize 8 --value '1.00'
-            PkgTool.Core sfo_setentry sce_sys/param.sfo ATTRIBUTE --type Integer --maxsize 4 --value 0
-            PkgTool.Core sfo_setentry sce_sys/param.sfo CATEGORY --type Utf8 --maxsize 4 --value 'gd'
-            PkgTool.Core sfo_setentry sce_sys/param.sfo CONTENT_ID --type Utf8 --maxsize 48 --value 'IV0000-MAHDI0001_00-MAHDIXP000000000'
-            PkgTool.Core sfo_setentry sce_sys/param.sfo DOWNLOAD_DATA_SIZE --type Integer --maxsize 4 --value 0
-            PkgTool.Core sfo_setentry sce_sys/param.sfo SYSTEM_VER --type Integer --maxsize 4 --value 0
-            PkgTool.Core sfo_setentry sce_sys/param.sfo TITLE --type Utf8 --maxsize 128 --value 'MAHDI XP'
-            PkgTool.Core sfo_setentry sce_sys/param.sfo TITLE_ID --type Utf8 --maxsize 12 --value 'MAHDI0001'
-            PkgTool.Core sfo_setentry sce_sys/param.sfo VERSION --type Utf8 --maxsize 8 --value '1.00'
+            PkgTool.Core sfo_setentry --type Integer --maxsize 4 --value 1 sce_sys/param.sfo APP_TYPE
+            PkgTool.Core sfo_setentry --type Utf8 --maxsize 8 --value '1.00' sce_sys/param.sfo APP_VER
+            PkgTool.Core sfo_setentry --type Integer --maxsize 4 --value 0 sce_sys/param.sfo ATTRIBUTE
+            PkgTool.Core sfo_setentry --type Utf8 --maxsize 4 --value 'gd' sce_sys/param.sfo CATEGORY
+            PkgTool.Core sfo_setentry --type Utf8 --maxsize 48 --value 'IV0000-MAHDI0001_00-MAHDIXP000000000' sce_sys/param.sfo CONTENT_ID
+            PkgTool.Core sfo_setentry --type Integer --maxsize 4 --value 0 sce_sys/param.sfo DOWNLOAD_DATA_SIZE
+            PkgTool.Core sfo_setentry --type Integer --maxsize 4 --value 0 sce_sys/param.sfo SYSTEM_VER
+            PkgTool.Core sfo_setentry --type Utf8 --maxsize 128 --value 'MAHDI XP' sce_sys/param.sfo TITLE
+            PkgTool.Core sfo_setentry --type Utf8 --maxsize 12 --value 'MAHDI0001' sce_sys/param.sfo TITLE_ID
+            PkgTool.Core sfo_setentry --type Utf8 --maxsize 8 --value '1.00' sce_sys/param.sfo VERSION
 
             echo 'Creating GP4'
-            create-gp4 -out=pkg.gp4 \
+            create-gp4 \
+              -out=pkg.gp4 \
               --content-id=IV0000-MAHDI0001_00-MAHDIXP000000000 \
               --files 'eboot.bin sce_sys/param.sfo sce_sys/icon0.png'
+
+            test -f pkg.gp4
 
             echo 'Building PKG'
             PkgTool.Core pkg_build pkg.gp4 .
