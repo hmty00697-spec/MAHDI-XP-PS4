@@ -1,4 +1,3 @@
-
 name: MAHDI XP PS4 Build
 
 on:
@@ -54,9 +53,25 @@ jobs:
             test -f eboot.bin
             test -f sce_sys/icon0.png
 
-            echo 'Checking packaging tools'
-            command -v create-gp4
-            command -v PkgTool.Core
+            echo 'Finding packaging tools'
+
+            CREATE_GP4=\$(command -v create-gp4 || find / -type f -name create-gp4 -print -quit 2>/dev/null)
+            PKGTOOL=\$(command -v PkgTool.Core || find / -type f -name PkgTool.Core -print -quit 2>/dev/null)
+
+            if [ -z \"\$CREATE_GP4\" ]; then
+              echo 'ERROR: create-gp4 not found'
+              exit 1
+            fi
+
+            if [ -z \"\$PKGTOOL\" ]; then
+              echo 'ERROR: PkgTool.Core not found'
+              exit 1
+            fi
+
+            export PATH=\"\$(dirname \"\$CREATE_GP4\"):\$(dirname \"\$PKGTOOL\"):\$PATH\"
+
+            echo 'create-gp4 found'
+            echo 'PkgTool.Core found'
 
             echo 'Creating param.sfo'
             PkgTool.Core sfo_new sce_sys/param.sfo
@@ -80,6 +95,7 @@ jobs:
             echo 'Building PKG'
             PkgTool.Core pkg_build pkg.gp4 .
 
+            echo 'Checking output'
             ls -lh *.pkg
             "
 
