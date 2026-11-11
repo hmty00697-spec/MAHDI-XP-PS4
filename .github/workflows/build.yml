@@ -1,3 +1,4 @@
+
 name: MAHDI XP PS4 Build
 
 on:
@@ -97,17 +98,20 @@ jobs:
             PkgTool.Core sfo_setentry --type Utf8 --maxsize 8 --value '1.00' sce_sys/param.sfo APP_VER
             PkgTool.Core sfo_setentry --type Integer --maxsize 4 --value 0 sce_sys/param.sfo ATTRIBUTE
             PkgTool.Core sfo_setentry --type Utf8 --maxsize 4 --value 'gd' sce_sys/param.sfo CATEGORY
-            PkgTool.Core sfo_setentry --type Utf8 --maxsize 48 --value 'IV0000-MAHDI0001_00-MAHDIXP000000000' sce_sys/param.sfo CONTENT_ID
+            PkgTool.Core sfo_setentry --type Utf8 --maxsize 48 --value 'IV0000-MHDI00001_00-MAHDIXP000000000' sce_sys/param.sfo CONTENT_ID
             PkgTool.Core sfo_setentry --type Integer --maxsize 4 --value 0 sce_sys/param.sfo DOWNLOAD_DATA_SIZE
             PkgTool.Core sfo_setentry --type Integer --maxsize 4 --value 0 sce_sys/param.sfo SYSTEM_VER
             PkgTool.Core sfo_setentry --type Utf8 --maxsize 128 --value 'MAHDI XP' sce_sys/param.sfo TITLE
-            PkgTool.Core sfo_setentry --type Utf8 --maxsize 12 --value 'MAHDI0001' sce_sys/param.sfo TITLE_ID
+            PkgTool.Core sfo_setentry --type Utf8 --maxsize 12 --value 'MHDI00001' sce_sys/param.sfo TITLE_ID
             PkgTool.Core sfo_setentry --type Utf8 --maxsize 8 --value '1.00' sce_sys/param.sfo VERSION
+
+            echo 'Inspecting PARAM.SFO'
+            PkgTool.Core sfo_listentries sce_sys/param.sfo
 
             echo 'Creating GP4'
             create-gp4 \
               -out=pkg.gp4 \
-              --content-id=IV0000-MAHDI0001_00-MAHDIXP000000000 \
+              --content-id=IV0000-MHDI00001_00-MAHDIXP000000000 \
               --files 'eboot.bin sce_sys/param.sfo sce_sys/icon0.png'
 
             test -f pkg.gp4
@@ -117,6 +121,15 @@ jobs:
 
             echo 'Checking output'
             ls -lh *.pkg
+
+            PKG_FILE=\$(find . -maxdepth 1 -type f -name '*.pkg' -print -quit)
+            test -n \"\$PKG_FILE\"
+
+            echo 'Listing PKG entries'
+            PkgTool.Core pkg_listentries \"\$PKG_FILE\"
+
+            echo 'Validating PKG hashes and signatures'
+            PkgTool.Core pkg_validate --verbose \"\$PKG_FILE\" || echo 'Validation warning: inspect output above.'
             "
 
       - name: Upload PS4 Package
