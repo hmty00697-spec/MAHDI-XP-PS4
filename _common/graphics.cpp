@@ -18,7 +18,17 @@ Scene2D::Scene2D(int w, int h, int pixelDepth)
     this->height = h;
     this->depth = pixelDepth;
 
-    this->frameBufferSize = this->width * this->height * this->depth;
+    this->video = -1;
+    this->directMemOff = 0;
+    this->directMemAllocationSize = 0;
+    this->videoMemSP = 0;
+    this->videoMem = NULL;
+    this->frameBuffers = NULL;
+    this->flipQueue = 0;
+
+    this->frameBufferSize = w * h * pixelDepth;
+    this->frameBufferCount = 0;
+    this->activeFrameBufferIdx = 0;
 }
 
 bool Scene2D::Init(size_t memSize, int numFrameBuffers)
