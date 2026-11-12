@@ -133,6 +133,7 @@ jobs:
             PkgTool.Core pkg_validate --verbose \"\$PKG_FILE\"
             "
 
+      
       - name: Upload PS4 Package
         if: success()
         uses: actions/upload-artifact@v7
@@ -140,7 +141,5 @@ jobs:
           name: MAHDI-XP-PS4-PKG
           path: |
             *.pkg
-            eboot.bin
-            pkg.gp4
-            sce_sys/param.sfo
           if-no-files-found: error
+
